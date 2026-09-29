@@ -96,6 +96,12 @@ MAX_AUDIT_FILE_MB = 40          # 单日 audit-log 超过这个体积就跳过�
 PRICING_CNY = {
     "deepseek-flash":  {"peak": (0.04, 2.0, 8.0),  "off": (0.02, 1.0, 4.0)},
     "deepseek-v4-pro": {"peak": (0.30, 9.0, 27.0), "off": (0.15, 4.5, 13.5)},
+    # 智谱 GLM（flat 价，无峰谷；bigmodel.cn 价目表 2026-09-29 查）
+    "glm-5.3-flash":   {"peak": (0.23, 0.8, 2.8),  "off": (0.23, 0.8, 2.8)},
+    "glm-5.3-flashx":  {"peak": (0.57, 2.0, 7.0),  "off": (0.57, 2.0, 7.0)},
+    "glm-5.3":         {"peak": (2.0, 8.0, 28.0),  "off": (2.0, 8.0, 28.0)},
+    # 腾讯混元 Hy3（flat 价；官方发布定价 输入1/输出4/缓存命中0.25 元每M）
+    "hy3":             {"peak": (0.25, 1.0, 4.0),  "off": (0.25, 1.0, 4.0)},
 }
 
 # 模型名别名 -> 定价键。官方说明：旧名 deepseek-v4-flash / -vision-exp 已下线，
@@ -106,6 +112,10 @@ MODEL_ALIAS = {
     "deepseek-v4-flash": "deepseek-flash",
     "deepseek-v4-flash-vision-exp": "deepseek-flash",
     "deepseek-v4-pro": "deepseek-v4-pro",
+    "glm-5.3-flash": "glm-5.3-flash",
+    "glm-5.3-flashx": "glm-5.3-flashx",
+    "glm-5.3": "glm-5.3",
+    "hy3": "hy3",
 }
 
 
@@ -485,7 +495,7 @@ def collect_tokens(cut):
         # 多模型会话无法拆分明细：整条记在主模型名下，避免双计
         main = models[0]
         a["models"][main] += 1
-        key = MODEL_ALIAS.get(main)
+        key = MODEL_ALIAS.get(main) or MODEL_ALIAS.get(main.lower())
         cfg = PRICING_CNY.get(key) if key else None
         if cfg:
             p = cfg["peak"] if is_peak(bj) else cfg["off"]
