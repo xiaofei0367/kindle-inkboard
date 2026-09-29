@@ -1,0 +1,321 @@
+{
+ "schema": 1,
+ "generated_at": "2026-09-29T11:12:17+08:00",
+ "stale_after_minutes": 90,
+ "token": {
+  "today": {
+   "date": "2026-09-29",
+   "credit": 25.66,
+   "sessions": 1.5,
+   "tokens_total": 6008904.24,
+   "tokens_uncached": 213444.33,
+   "tokens_cached": 5779431.32,
+   "tokens_out": 16028.59,
+   "cache_hit_rate": 0.9557,
+   "calls": 54.8,
+   "cost_cny": 0.0,
+   "balance_cny": 58.3,
+   "credit_balance": null,
+   "credit_balance_at": null,
+   "credit_balance_stale": true
+  },
+  "days": [
+   {
+    "date": "2026-09-23",
+    "credit": 90.56,
+    "sessions": 3.5,
+    "tokens_total": 59063988.28,
+    "tokens_uncached": 1047022.02,
+    "tokens_cached": 57668886.8,
+    "tokens_out": 348079.46,
+    "calls": 425.2,
+    "cost_cny": 12.392,
+    "hosts_present": 3,
+    "cost_parts": {
+     "hit": 3.47,
+     "unc": 3.718,
+     "out": 5.205
+    },
+    "cache_hit_rate": 0.9778,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-24",
+    "credit": 27.68,
+    "sessions": 3.5,
+    "tokens_total": 57621741.12,
+    "tokens_uncached": 1780603.11,
+    "tokens_cached": 55523559.589999996,
+    "tokens_out": 317578.42,
+    "calls": 358.4,
+    "cost_cny": 8.38,
+    "hosts_present": 3,
+    "cost_parts": {
+     "hit": 2.346,
+     "unc": 2.514,
+     "out": 3.52
+    },
+    "cache_hit_rate": 0.9613,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-25",
+    "credit": 6.86,
+    "sessions": 2.5,
+    "tokens_total": 20643769.78,
+    "tokens_uncached": 564168.66,
+    "tokens_cached": 19936642.720000003,
+    "tokens_out": 142958.4,
+    "calls": 141.6,
+    "cost_cny": 6.718,
+    "hosts_present": 3,
+    "cost_parts": {
+     "hit": 1.881,
+     "unc": 2.015,
+     "out": 2.822
+    },
+    "cache_hit_rate": 0.9657,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-26",
+    "credit": 1.18,
+    "sessions": 1.5,
+    "tokens_total": 648212.05,
+    "tokens_uncached": 11432.85,
+    "tokens_cached": 632512.7200000001,
+    "tokens_out": 4266.48,
+    "calls": 7.6,
+    "cost_cny": 0.124,
+    "hosts_present": 3,
+    "cost_parts": {
+     "hit": 0.035,
+     "unc": 0.037,
+     "out": 0.052
+    },
+    "cache_hit_rate": 0.9779,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-27",
+    "credit": 1.31,
+    "sessions": 1.5,
+    "tokens_total": 24355362.84,
+    "tokens_uncached": 417989.55,
+    "tokens_cached": 23882996.84,
+    "tokens_out": 54376.45,
+    "calls": 71.6,
+    "cost_cny": 3.176,
+    "hosts_present": 3,
+    "cost_parts": {
+     "hit": 0.889,
+     "unc": 0.953,
+     "out": 1.334
+    },
+    "cache_hit_rate": 0.9786,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-28",
+    "credit": 63.4,
+    "sessions": 4.0,
+    "tokens_total": 16437141.49,
+    "tokens_uncached": 735134.4,
+    "tokens_cached": 15616539.16,
+    "tokens_out": 85467.93,
+    "calls": 144.0,
+    "cost_cny": 0.093,
+    "hosts_present": 2,
+    "cost_parts": {
+     "hit": 0.026,
+     "unc": 0.028,
+     "out": 0.039
+    },
+    "cache_hit_rate": 0.944,
+    "split_known": true
+   },
+   {
+    "date": "2026-09-29",
+    "credit": 25.66,
+    "sessions": 1.5,
+    "tokens_total": 6008904.24,
+    "tokens_uncached": 213444.33,
+    "tokens_cached": 5779431.32,
+    "tokens_out": 16028.59,
+    "calls": 54.8,
+    "cost_cny": 0.0,
+    "hosts_present": 1,
+    "cost_parts": {
+     "hit": 0.0,
+     "unc": 0.0,
+     "out": 0.0
+    },
+    "cache_hit_rate": 0.9557,
+    "split_known": false
+   }
+  ],
+  "hosts": [
+   {
+    "host": "company",
+    "hostname": "Fei-PC",
+    "generated_at": "2026-09-29T11:00:05+08:00",
+    "today_date": "2026-09-29",
+    "reported_today": true,
+    "credit": 69.36,
+    "sessions": 3,
+    "tokens_total": 14655864,
+    "cache_hit_rate": 0.9557,
+    "balance_cny": 61.76
+   },
+   {
+    "host": "home",
+    "hostname": "MacBook.local",
+    "generated_at": "2026-09-27T18:31:41+08:00",
+    "today_date": "2026-09-27",
+    "reported_today": false,
+    "credit": 0.0,
+    "sessions": 0,
+    "tokens_total": 0,
+    "cache_hit_rate": null,
+    "balance_cny": 61.76
+   },
+   {
+    "host": "xiaoxin",
+    "hostname": "小新",
+    "generated_at": "2026-09-28T23:45:58+08:00",
+    "today_date": "2026-09-28",
+    "reported_today": false,
+    "credit": 0.0,
+    "sessions": 0,
+    "tokens_total": 5442821,
+    "cache_hit_rate": 0.9368,
+    "balance_cny": 61.76
+   }
+  ],
+  "machines": [
+   {
+    "host": "company",
+    "label": "公司机",
+    "present": true,
+    "hostname": "Fei-PC",
+    "reported_today": true,
+    "today_credit": 69.36,
+    "today_tokens": 14655864,
+    "last_known_credit": 69.36,
+    "last_known_at": "2026-09-29T11:00:05+08:00",
+    "credit": 69.36,
+    "tokens_total": 14655864,
+    "sessions": 3,
+    "share": 1.0,
+    "generated_at": "2026-09-29T11:00:05+08:00"
+   },
+   {
+    "host": "xiaoxin",
+    "label": "小新",
+    "present": true,
+    "hostname": "小新",
+    "reported_today": false,
+    "today_credit": 0.0,
+    "today_tokens": 0.0,
+    "last_known_credit": 0.0,
+    "last_known_at": "2026-09-28T23:45:58+08:00",
+    "credit": 0.0,
+    "tokens_total": 0.0,
+    "sessions": 0,
+    "share": 0.0,
+    "generated_at": "2026-09-28T23:45:58+08:00"
+   },
+   {
+    "host": "home",
+    "label": "Mac",
+    "present": true,
+    "hostname": "MacBook.local",
+    "reported_today": false,
+    "today_credit": 0.0,
+    "today_tokens": 0.0,
+    "last_known_credit": 0.0,
+    "last_known_at": "2026-09-27T18:31:41+08:00",
+    "credit": 0.0,
+    "tokens_total": 0.0,
+    "sessions": 0,
+    "share": 0.0,
+    "generated_at": "2026-09-27T18:31:41+08:00"
+   }
+  ],
+  "share_basis": "credit",
+  "host_count": 3,
+  "caveat": "token 明细来自 traces.modelInfo，历史覆盖率约 60%（部分会话未写入该字段）；积分（credit）来自 workbuddy.db，完整可靠，故柱状图以积分为准。cost_cny 是按 DeepSeek 官方价目对 token 的估算，非实际扣费。"
+ },
+ "vps": {
+  "source_generated_at": "2026-09-29T02:55:01.342821+00:00",
+  "collected_at": "2026-09-29T11:00:08+08:00",
+  "sites": [
+   {
+    "id": "tokyo",
+    "name": "VPS-1",
+    "short": "节点1",
+    "provider": "示例服务商",
+    "quota_bytes": 500000000000,
+    "quota_label": "500 GB",
+    "reset_label": "每月 3 号（UTC）",
+    "state": "active",
+    "used_bytes": 233000000000,
+    "pct": 46.6,
+    "pct_estimated": false,
+    "level": "ok",
+    "days_to_reset": 3.9,
+    "last_known": {}
+   },
+   {
+    "id": "rn",
+    "name": "VPS-2",
+    "short": "节点2",
+    "provider": "示例服务商",
+    "quota_bytes": 2930000000000,
+    "quota_label": "2.93 TB",
+    "reset_label": "每月 1 号（加州时间）",
+    "state": "active",
+    "used_bytes": 193380000000,
+    "pct": 6.6,
+    "pct_estimated": false,
+    "level": "ok",
+    "days_to_reset": 1.9,
+    "last_known": {}
+   },
+   {
+    "id": "dallas",
+    "name": "VPS-3",
+    "short": "节点3",
+    "provider": "示例服务商",
+    "quota_bytes": 2000000000000,
+    "quota_label": "2000 GB",
+    "reset_label": "每月 8 号",
+    "state": "active",
+    "used_bytes": 458000000000,
+    "pct": 22.9,
+    "pct_estimated": false,
+    "level": "ok",
+    "days_to_reset": 8.9,
+    "last_known": {}
+   }
+  ]
+ },
+ "newapi": {
+  "today_calls": 0,
+  "today_tokens": 0,
+  "today_quota": 0,
+  "days": [],
+  "by_channel": [],
+  "logs_total": 12,
+  "last_log_at": "2026-09-14T21:06:30"
+ },
+ "errors": [],
+ "sources": {
+  "locals": [
+   "company",
+   "home",
+   "xiaoxin"
+  ],
+  "remote": "user@your-server-ip"
+ }
+}

@@ -1,0 +1,5 @@
+# Kindle-side config: copy to D:/board/board.conf (USB mass storage), loop re-reads every cycle
+URL=http://YOUR_SERVER_IP/board.png
+BATT_X=68
+BATT_Y=6
+POLL=3540

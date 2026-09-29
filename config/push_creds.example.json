@@ -1,0 +1,6 @@
+{
+  "host": "your-server-ip",
+  "user": "deploy",
+  "password": "use-a-restricted-key-or-password",
+  "web_root": "/opt/board/www"
+}

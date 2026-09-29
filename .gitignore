@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+output/
+*.log
+weather_cache.json
+board_latest.json
+schedule.txt
+quotes.txt
+*.creds*
