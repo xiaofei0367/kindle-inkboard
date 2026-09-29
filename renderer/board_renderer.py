@@ -166,6 +166,11 @@ class SDraw(object):
         self._d.pieslice(self._xy(xy), start=start, end=end, fill=fill,
                          outline=outline, width=self._w(width), **kw)
 
+    def arc(self, xy, start, end, fill=None, width=1, **kw):
+        # ★ 角度不缩放；width 向圆心方向扩展（环形描边用）
+        self._d.arc(self._xy(xy), start=start, end=end, fill=fill,
+                    width=self._w(width), **kw)
+
     def textbbox(self, xy, text, font=None, **kw):
         if self.S == 1:
             return self._d.textbbox(xy, text, font=font, **kw)
@@ -546,7 +551,9 @@ def render(data, out, now=None):
     if used is not None and pct is not None and state != "suspended":
         frac = min(max(float(pct) / 100.0, 0.0), 1.0)
         if frac > 0:
-            d.pieslice([px0, py0, px1, py1], start=-90, end=-90 + 360 * frac, fill=INK)
+            # 环形描边（v13 口径）：只画 PIE_RING 宽的弧段，中心留白给文字
+            d.arc([px0, py0, px1, py1], start=-90, end=-90 + 360 * frac,
+                  fill=INK, width=PIE_RING)
         text((cxp, PIE_CY - 18), fmt_bytes(used), f22, INK, anchor="mm")
         text((cxp, PIE_CY + 8), "已用 %.0f%%" % float(pct), f14, DIM, anchor="mm")
     else:
