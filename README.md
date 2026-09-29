@@ -2,7 +2,7 @@
 
 > 一块越狱 Kindle，变成自托管的墨水屏仪表盘：AI 用量、VPS 流量、iCloud 日程、天气、每小时一格的金句。**深度睡眠调度下续航以「天」计（实测 4~9 天一充电）。**
 
-![demo](docs/demo.png)
+![board preview](docs/board-preview.png)
 
 English | [中文](#中文)
 
@@ -37,7 +37,7 @@ A jailbroken Kindle (PaperWhite/Kindle 10th gen class, 600×800 e-ink) pulls a P
 
 1. **Render a board** (no Kindle needed):
    ```bash
-   python renderer/board_renderer.py --data data/board_latest.example.json --out demo.png
+   python renderer/board_renderer.py --data data/board_latest.example.json --out board-preview.png
    ```
 2. **Serve it**: any static HTTP server; point `URL` in the Kindle config at the PNG.
 3. **Kindle side**: jailbreak first (we used the open-source [SpiderCat](https://github.com/Adazem009/spidercat) — follow its own docs), then install `kindle/board.sh`; it self-installs the loop, watchdog and deep-sleep schedule.
