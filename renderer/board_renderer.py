@@ -7,14 +7,14 @@
 
   删：
   * R1 右栏「会话/输入/输出」「缓存命中」「积分=平台计费｜¥=厂商价目估算」口径说明
-  * 圣何塞 / 达拉斯两站（2.93TB / 2TB 永远用不完 = 永不异常 = 纯噪音）。
+  * 另外两台低用量站点（配额巨大永远用不完 = 永不异常 = 纯噪音）。
     ⚠️ 删显示 ≠ 删采集：remote.json 照常采全三站，只是 v14 不读；页脚
     「数据已过期>90分钟」横幅仍是采集链路挂机报警器。
   * R3 三机占比 / New API 分流（公司机 100% 是常量，零信息量）
   * 「预警」徽标、「深色＝已用」「未用 XX GB」「柱高/分段」说明行
 
   版式（600×800，自上而下）：
-  * 顶栏：日期+星期（f20）+ 天气行（f16，wttr.in 上海，30 分钟缓存）
+  * 顶栏：日期+星期（f20）+ 天气行（f16，wttr.in，城市由 BOARD_CITY 环境变量配置，30 分钟缓存）
     —— 右上角整片留白，专给 Kindle 侧 eips 电量叠加（y≥45 安全区）
   * R1 今日用量：7 日三段柱（柱高=token，分段=成本构成，v13 口径原样保留）
     右栏三数据统一「图标+数字」f30 同号：◆ 积分｜¥ 金额｜Ξ token（全数字千分位）
@@ -31,10 +31,6 @@
   * quotes.txt  —— 「正文|作者」每行一条（hitokoto 语句库清洗版 ≈1900 条 + 手选置顶）；
     缺失 → 内置兜底 8 条
   * weather_cache.json —— wttr.in 30 分钟缓存（自动生成，失败用旧值最长 6h，再败显示 —）
-
-  ⚠️ 上线节奏：等 10-03 东京站复活后，把 run_board.py 的 _RENDERER_CANDIDATES
-     里 v14 提到首位；在那之前 v13 仍是现役，v14 只作候选兜底。
-  回退：候选序改回 v13 首位即可。
 
 ═══ 继承自 v11/v13 的机制（原样保留）═══
 * SDraw 超采样代理（S=12 生产档；8× 是离群档别用；S=1 恒等自校验）
@@ -96,8 +92,8 @@ RX = M + 232 + 16          # 280，右栏统一左缘（v14 定稿：比 v13 再
 CX2 = RX + 176
 
 # 城市与数据目录（board_data 由 main() 解析后写入）
-CITY = "Shanghai"
-CITY_CN = "上海"
+CITY = os.environ.get("BOARD_CITY", "")          # wttr.in 城市名（如 Shanghai）；留空=不显示天气行
+CITY_CN = os.environ.get("BOARD_CITY_CN", "") or CITY
 BOARD_DATA_DIR = None
 
 
@@ -262,7 +258,9 @@ def _beaufort(kmph):
 
 
 def _fetch_wttr():
-    """拉 wttr.in 当前天气，拼成「上海  26° 多云转晴 · 东南风 2 级」。失败返回 None。"""
+    """拉 wttr.in 当前天气，拼成「城市  26° 多云转晴 · 东南风 2 级」。未配置城市或失败返回 None。"""
+    if not CITY:
+        return None
     try:
         import urllib.request
         url = "https://wttr.in/%s?format=j1&lang=zh" % CITY

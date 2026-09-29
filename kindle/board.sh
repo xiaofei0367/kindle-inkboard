@@ -94,7 +94,7 @@ if [ ! -f "$CONF" ]; then
 # Kindle 看板可调参数 —— 改完保存即可，循环下一轮自动生效（无需重启动）
 # 本文件在电脑上是 D:\board\board.conf，在 Kindle 上是 /mnt/us/board/board.conf
 
-# URL   看板图片地址（公司机渲染后推到圣何塞 RN）
+# URL   看板图片地址（渲染机推送后供 Kindle 拉取）
 URL=http://YOUR_SERVER_IP/board.png
 
 # SLEEP 深度睡眠省电模式

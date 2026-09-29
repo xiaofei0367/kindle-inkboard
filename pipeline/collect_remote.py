@@ -4,7 +4,7 @@
 Kindle 看板 2.0 · 远端数据采集（只在公司机跑）
 
 做两件事：
-  1) ssh 到达拉斯 hub 执行 remote_probe.py，取回 VPS 流量 + New API 用量
+  1) ssh 到远程 hub 执行 remote_probe.py，取回 VPS 流量 + New API 用量
   2) 结果写进 <DATA_DIR>/remote.json
 
 用法：

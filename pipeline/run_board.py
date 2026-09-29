@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Kindle 看板 2.0 · 公司机全链路一键脚本
 
-    采集本机 → 采集远端(VPS+NewAPI) → 合并 → 渲染 → 推送圣何塞 RN
+    采集本机 → 采集远端(VPS+NewAPI) → 合并 → 渲染 → 推送 Web 服务器
 
 用法：
     python run_board.py            # 全链路
