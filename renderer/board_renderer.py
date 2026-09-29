@@ -548,6 +548,8 @@ def render(data, out, now=None):
         state = site.get("state")
 
     d.ellipse([px0, py0, px1, py1], fill=TRACK)
+    # ★ v14.1 环心提白（v13 口径）：中心文字坐白底，不再和灰环糊在一起
+    d.ellipse([cxp - rin, PIE_CY - rin, cxp + rin, PIE_CY + rin], fill=BG)
     if used is not None and pct is not None and state != "suspended":
         frac = min(max(float(pct) / 100.0, 0.0), 1.0)
         if frac > 0:

@@ -3,6 +3,8 @@
 # 由 /mnt/us/documents/BoardUpgrade.sh（或 BoardStart.sh）调用；幂等，点一次 = 重启一次
 # 部署：D:\board\board.sh.new -> Kindle 侧 cp -f -> /mnt/us/board/board.sh
 #
+# ── v5.9 (2026-09-29) 修「断更 2.5h」：删跳过 WiFi 策略 + USB 轮不计睡眠失败
+#     + 拉图成功清零睡眠失败 + 看门狗重启清零 sfail（防卡死常驻模式）──
 # ── v5.8 (2026-09-24) 修「被外部唤醒被误判为睡眠失败」+ 唤醒瞬间立即补刷 ──
 #   依据 v5.7 实测（15:42:48）：用户插 USB -> USB 插入本身就是唤醒源 ->
 #     设备从 3540s 的睡眠里只睡了 554s 就醒 -> 我的判据把它当「没睡下去」，
@@ -23,8 +25,7 @@
 #   ⇒ ① **主动关 WiFi 是风险源，不是救援手段**。v5.6 只改了"正常路径不关"，
 #        但 ensure_wifi 的**故障恢复路径仍在做「关/开重置」**——自相矛盾，
 #        且在已 wedge 时是火上浇油。→ 本次加 WIFI_RECOVER（默认 0 = 绝不主动关）。
-#      ② WiFi 长期断时每轮白等 30~95s 且保持 Active = 纯耗电。
-#        → 连续失败 >=3 轮后**跳过等待与拉图直接睡**。
+#      ② WiFi 长期断时的省电策略（v5.7 加的「跳过 WiFi」在 v5.9 已删：断更上限变长）。
 #
 # ── v5.6 (2026-09-24) 再修两个 ──────────────────────────────────────
 #   ① ★根因：`wirelessEnable 0` + suspend → WiFi 再也回不来（v5.4 实测 7 轮全失败，
@@ -365,7 +366,7 @@ load_conf
 echo $$ > "$PIDF"
 hb_set $(( $(date +%s) + 900 ))
 echo "[loop] started pid=$$ $(date '+%m-%d %H:%M:%S') SLEEP=$SLEEP WIFI_OFF=$WIFI_OFF POLL=$POLL"
-SL "loop started pid=$$ SLEEP=$SLEEP WIFI_OFF=$WIFI_OFF POLL=$POLL 睡眠失败计数=$(sfail_get) 拉图失败计数=$(wf_get) 版本=v5.8"
+SL "loop started pid=$$ SLEEP=$SLEEP WIFI_OFF=$WIFI_OFF POLL=$POLL 睡眠失败计数=$(sfail_get) 拉图失败计数=$(wf_get) 版本=v5.9"
 
 sleep 15
 
@@ -436,18 +437,24 @@ while true; do
   if [ "$SLEEP" = "1" ] && [ -w "$WA" ] && [ "$(sfail_get)" -lt 3 ]; then
     CAN_SLEEP=1
   fi
+  # ★ v5.9：USB 挂载期间 mem suspend 必然秒醒（会被误计睡眠失败），直接转常驻轮
+  UM=0
+  for n in /sys/class/power_supply/*usb* /sys/class/power_supply/*ac*; do
+    [ -f "$n/present" ] && [ "$(cat "$n/present" 2>/dev/null)" = "1" ] && UM=1
+  done
+  if [ "$UM" = "1" ]; then
+    CAN_SLEEP=0
+    SL "USB 挂载中 -> 本轮常驻等待（不计睡眠失败）"
+  fi
   NE=0
 
   # ---------- ② WiFi（等真 IP，不盲重试）----------
-  #   ★ v5.7：连续失败 >=3 轮后**跳过等待与拉图直接睡** ——
-  #     长期 WiFi 故障时，每轮白等 30s 且保持 Active 是纯耗电，不如多睡。
   WOK=1
   if [ "$CAN_SLEEP" = "1" ]; then
     WFN=$(wf_get); case "$WFN" in ''|*[!0-9]*) WFN=0;; esac
-    if [ "$WFN" -ge 3 ]; then
-      WOK=0
-      SL "WiFi 已连续失败 ${WFN} 次 -> 本轮跳过等待与拉图，直接睡（省电优先）"
-    elif ensure_wifi; then
+    #   ★ v5.9：删「连续失败>=3 跳过 WiFi」——退避已封顶 POLL，每小时才醒一次，
+    #     每轮白等 30s 可忽略；换来断更上限从 ~2.5h 缩到 ~1h（09-29 wedge 实测教训）。
+    if ensure_wifi; then
       : 
     else
       WOK=0
@@ -481,6 +488,7 @@ while true; do
 
   if [ "$ok" = "1" ]; then
     wf_set 0
+    sfail_set 0   # ★ v5.9：业务成功轮清零睡眠失败计数（防电源键秒醒误累积停用睡眠）
     if [ "$doit" = "1" ]; then
       mv "$NEW" "$CUR"
       if show_board; then
@@ -655,6 +663,7 @@ while true; do
     [ -n "$LP" ] && kill -9 "$LP" 2>/dev/null
     sleep 2
     if [ -f "$LOOP" ]; then
+      echo 0 > "$BOARD/.sleep_fail"   # ★ v5.9：重启即重给睡眠机会（防 sfail=3 卡死常驻模式）
       setsid sh "$LOOP" </dev/null >>"$BOARD/loop.out" 2>&1 &
       WL "已重新拉起 loop.sh"
     else
@@ -685,6 +694,6 @@ LP=$(cat "$PIDF" 2>/dev/null)
 WP=$(cat "$WPIDF" 2>/dev/null)
 echo "[board]    循环 pid=${LP:-未写出}"
 echo "[board]    看门狗 pid=${WP:-未写出}"
-echo "[board] 完成。v5.8：首刷约 15 秒后上屏；头 3 轮 3 分钟短周期自检睡眠。"
+echo "[board] 完成。v5.9：首刷约 15 秒后上屏；头 3 轮 3 分钟短周期自检睡眠。"
 echo "[board]   USB 模式=整轮挂起；WiFi 不关不重置；被唤醒只算打断不算失败"
 echo "[board]   诊断看 sleep.log（睡眠/退避）／ watch.log（看门狗）"
