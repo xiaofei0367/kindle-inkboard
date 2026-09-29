@@ -4,11 +4,11 @@
 Kindle 看板 2.0 · 本机数据采集（三台机器各自运行这一个脚本）
 
 产出（写进 OneDrive 同步区，各机各写自己的文件，永不冲突）：
-    <DATA_DIR>/local_<host>.json
+    <OneDrive>/WorkBuddy/_共享/board_data/local_<host>.json
 
 采集三样：
   1) 积分消耗   <- ~/.workbuddy/workbuddy.db  session_usage.credit_json  （权威"花费"口径）
-  2) Token 明细 <- ~/.workbuddy/traces/*/trace_*.json  trace.modelInfo   （输入/缓存/输出）
+  2) Token 明细 <- ~/.workbuddy/projects/**/*.jsonl  providerData.usage（输入/缓存/输出；2026-09-29 起弃 traces——traces 覆盖不全漏 ~20%，jsonl 与索拉里屏同源）
   3) 余额       <- DeepSeek 官方 /user/balance（key 取自 ~/.workbuddy/models.json）
 
 用法：
@@ -18,7 +18,7 @@ Kindle 看板 2.0 · 本机数据采集（三台机器各自运行这一个脚�
     python collect_local.py --rebuild-ledger  # 丢弃积分账本、按历史重建（排障用）
 
 设计说明：
-  * 各机互不互通状态目录，所以必须各自导出，靠共享同步盘汇总。
+  * 三机不互通 ~/.workbuddy（不在 OneDrive 内），所以必须各自导出，靠 OneDrive 汇总。
   * token 只有含 generation span 的 trace 才带 modelInfo，其余是空壳，跳过是正确的。
 
 ★ 积分归日（2026-09-23 重做）------------------------------------------------
@@ -39,7 +39,7 @@ Kindle 看板 2.0 · 本机数据采集（三台机器各自运行这一个脚�
     记为 undated，**不计入任何一天**。宁可少算，也不让老账污染今天。
     唯一例外：该会话今天存在 v7 请求（说明它今天确实活着）才认。
 
-  账本落本机状态文件（不进同步盘）：
+  账本落本机 `~/.workbuddy/board_credit_ledger.json`（**不进 OneDrive**）：
     entries   {requestId: [归日, 已计金额, session8]}   查重 + 补差额
     daily     {日期: 当日积分}                          ★ 权威日账，只增不改
     daily_sids{日期: [session8]}                        当日活跃会话
@@ -82,7 +82,7 @@ AUDIT_LOG = os.path.join(WB, "audit-log")
 
 SCHEMA = 1
 
-# 积分账本（本机私有状态，绝不进同步盘）
+# 积分账本（本机私有状态，绝不进 OneDrive）
 LEDGER_NAME = "board_credit_ledger.json"
 LEDGER_SCHEMA = 1
 LEDGER_KEEP_DAYS = 400          # 日账保留期
@@ -128,7 +128,7 @@ def is_peak(dt_bj):
 
 # ---------------------------------------------------------------- 环境
 def find_onedrive():
-    """定位数据根目录（OneDrive 等同步盘；也可用 BOARD_DATA 环境变量覆盖）。"""
+    """跨机定位 OneDrive 根目录（Windows 用环境变量，macOS 用 CloudStorage 挂载）。"""
     for k in ("OneDrive", "OneDriveCommercial", "OneDriveConsumer"):
         p = os.environ.get(k)
         if p and os.path.isdir(p):
@@ -453,58 +453,100 @@ def collect_credits(days_back=8, host=None, rebuild=False):
 
 # ---------------------------------------------------------------- 2) Token
 def collect_tokens(cut):
-    """按北京时间日期聚合 token 与估算费用。cut 是 ISO 日期字符串。"""
+    """按北京时间日期聚合 token 与估算费用。cut 是 ISO 日期字符串。
+
+    ★ 2026-09-29 口径切换：traces → projects/**/*.jsonl
+      traces 覆盖不全（实测本机漏 ~20%），jsonl 会话记录是事实口径（索拉里屏同源）。
+      每条消息取 providerData.usage：totalTokens = input+output；
+      inputTokens 已含缓存，cached 拆分取 inputTokensDetails[*].cached_tokens；
+      按 providerData.messageId 分日去重（索拉里 scanner 同规则）。
+      模型名取 providerData.model（每条消息各自精确，不再有"多模型记主模型"的近似）。
+    """
     agg = collections.defaultdict(lambda: {
         "uncached": 0, "cached": 0, "out": 0, "calls": 0,
         "cost_cny": 0.0, "cost_hit": 0.0, "cost_unc": 0.0, "cost_out": 0.0, "traces": 0,
         "models": collections.Counter(), "unpriced": set(),
     })
+    seen = collections.defaultdict(set)   # day -> set(providerData.messageId)
     n_files = n_used = 0
-    for f in glob.glob(os.path.join(TRACES, "*", "trace_*.json")):
-        n_files += 1
-        try:
-            if datetime.datetime.fromtimestamp(os.path.getmtime(f)).date().isoformat() < cut:
+    root = os.path.join(WB, "projects")
+    for dirpath, _dirs, names in os.walk(root):
+        for fn in names:
+            if not fn.endswith(".jsonl"):
                 continue
-            with open(f, encoding="utf-8") as fh:
-                d = json.load(fh)
-        except Exception:
-            continue
-        tr = d.get("trace") or {}
-        mi = tr.get("modelInfo")
-        if not mi:
-            continue
-        started = tr.get("startedAt") or ""
-        try:
-            bj = datetime.datetime.fromisoformat(started.replace("Z", "+00:00")).astimezone(BJ)
-        except Exception:
-            continue
-        day = bj.date().isoformat()
-        if day < cut:
-            continue
-        n_used += 1
-        models = mi.get("models") or ["(unknown)"]
-        tin = int(mi.get("totalInputTokens") or 0)
-        tc = int(mi.get("totalCachedTokens") or 0)
-        tout = int(mi.get("totalOutputTokens") or 0)
-        a = agg[day]
-        a["uncached"] += max(0, tin - tc)
-        a["cached"] += tc
-        a["out"] += tout
-        a["calls"] += int(mi.get("callCount") or 0)
-        a["traces"] += 1
-        # 多模型会话无法拆分明细：整条记在主模型名下，避免双计
-        main = models[0]
-        a["models"][main] += 1
-        key = MODEL_ALIAS.get(main) or MODEL_ALIAS.get(main.lower())
-        cfg = PRICING_CNY.get(key) if key else None
-        if cfg:
-            p = cfg["peak"] if is_peak(bj) else cfg["off"]
-            a["cost_hit"] += tc * p[0] / 1e6
-            a["cost_unc"] += max(0, tin - tc) * p[1] / 1e6
-            a["cost_out"] += tout * p[2] / 1e6
-            a["cost_cny"] += (tc * p[0] + max(0, tin - tc) * p[1] + tout * p[2]) / 1e6
-        else:
-            a["unpriced"].add(main)
+            f = os.path.join(dirpath, fn)
+            n_files += 1
+            try:
+                if datetime.datetime.fromtimestamp(os.path.getmtime(f)).date().isoformat() < cut:
+                    continue   # 近 N 天没动过的文件不含窗口内事件
+            except Exception:
+                continue
+            try:
+                fh = open(f, "rb")
+            except Exception:
+                continue
+            with fh:
+                for ln in fh:
+                    if b'"totalTokens"' not in ln and b'"inputTokens"' not in ln:
+                        continue
+                    try:
+                        d = json.loads(ln)
+                    except Exception:
+                        continue
+                    if not isinstance(d, dict):
+                        continue
+                    pd = d.get("providerData")
+                    if not isinstance(pd, dict):
+                        continue
+                    u = pd.get("usage")
+                    if not isinstance(u, dict):
+                        continue
+                    tt = u.get("totalTokens")
+                    if tt is None:
+                        tt = (u.get("inputTokens") or 0) + (u.get("outputTokens") or 0)
+                    if not tt:
+                        continue
+                    ts = d.get("timestamp")
+                    try:
+                        if isinstance(ts, str):
+                            bj = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00")).astimezone(BJ)
+                        else:
+                            bj = datetime.datetime.fromtimestamp(int(ts) / 1000.0, BJ)
+                    except Exception:
+                        continue
+                    day = bj.date().isoformat()
+                    if day < cut:
+                        continue
+                    n_used += 1
+                    mid = pd.get("messageId")
+                    if mid:
+                        if mid in seen[day]:
+                            continue
+                        seen[day].add(mid)
+                    a = agg[day]
+                    tin = int(u.get("inputTokens") or 0)
+                    tout = int(u.get("outputTokens") or 0)
+                    tc = 0
+                    for det in (u.get("inputTokensDetails") or []):
+                        if isinstance(det, dict):
+                            tc += int(det.get("cached_tokens") or 0)
+                    a["uncached"] += max(0, tin - tc)
+                    a["cached"] += tc
+                    a["out"] += tout
+                    a["calls"] += 1
+                    a["traces"] += 1   # 字段名保留（merge 兼容），语义=入账消息数
+                    model = pd.get("model") or "(unknown)"
+                    a["models"][model] += 1
+                    key = MODEL_ALIAS.get(model) or MODEL_ALIAS.get(str(model).lower())
+                    cfg = PRICING_CNY.get(key) if key else None
+                    if cfg:
+                        p = cfg["peak"] if is_peak(bj) else cfg["off"]
+                        a["cost_hit"] += tc * p[0] / 1e6
+                        a["cost_unc"] += max(0, tin - tc) * p[1] / 1e6
+                        a["cost_out"] += tout * p[2] / 1e6
+                        a["cost_cny"] += (tc * p[0] + max(0, tin - tc) * p[1] + tout * p[2]) / 1e6
+                    else:
+                        a["unpriced"].add(model)
     return agg, n_files, n_used
 
 
@@ -648,7 +690,7 @@ def main():
 
     od = find_onedrive()
     if not od:
-        print("ERROR: 找不到数据目录", file=sys.stderr)
+        print("ERROR: 找不到 OneDrive 目录", file=sys.stderr)
         return 2
     outdir = os.path.join(od, "WorkBuddy", "_共享", "board_data")
     os.makedirs(outdir, exist_ok=True)
